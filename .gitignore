@@ -1,0 +1,7 @@
+# Local Wi-Fi / OTA credentials
+LiPo_Charger_Helper/secrets.h
+
+# Arduino build output
+/tmp/lipo-build/
+/tmp/lipo-out/
+LiPo_Charger_Helper/build/
