@@ -1,6 +1,6 @@
 # LiPo Charger Helper (ESP32-S3 Reverse TFT Feather)
 
-This project turns the Adafruit ESP32-S3 Reverse TFT Feather into a battery/power status display with OTA updates over local Wi-Fi.
+This project turns the Adafruit ESP32-S3 Reverse TFT Feather into a battery telemetry display with an on-demand Wi-Fi + OTA screen.
 
 ## Project layout (recommended)
 - Sketch folder: `LiPo_Charger_Helper/`
@@ -13,28 +13,30 @@ This project turns the Adafruit ESP32-S3 Reverse TFT Feather into a battery/powe
 The ESP32 Arduino CLI toolchain is most reliable when the sketch folder and `.ino` name do not contain spaces. This layout avoids build issues.
 
 ## Buttons
-- `D0`: cycle screens.
-- `D1` (hold ~2.2s): arm OTA window.
-- `D2`: debug-visible button state.
+- `D0`: cycle between Battery screen and WiFi/OTA screen.
+- `D1` short press: enable Wi-Fi (on-demand).
+- `D1` hold ~2.2s: unlock OTA upload for 10 minutes.
 
 ## OTA model
+- Wi-Fi is off by default to preserve battery.
+- Wi-Fi is enabled only when `D1` is pressed.
 - OTA is locked by default.
 - Hold `D1` to arm OTA for 10 minutes.
 - Endpoint: `http://<board_ip>/update`
 - Auth from `secrets.h` (`OTA_HTTP_USER`, `OTA_HTTP_PASSWORD`).
 
-## Power/charge state detection method
-- Uses a confidence-based battery-present detector (avoids single-sample misclassification).
-- Uses a short telemetry history window from MAX17048 (`SOC`, `VBAT`, `%/hr`) to smooth noisy readings.
-- Uses USB presence from VBUS/USB signals first, with conservative inference only when battery trends clearly indicate charging.
-- Adds `USB IDLE` state so USB-connected systems are not mislabeled as `DISCHARGING` when current is near-zero/noisy.
-- Note: charge current limits/termination are handled by onboard charger hardware; firmware is telemetry/state logic only.
+## Telemetry model
+- Main screen shows live MAX17048 telemetry:
+  - `SOC`
+  - `vBat`
+  - `cRate`
+- No battery/USB classification logic is used.
 
 ## Setup
 1. Copy `secrets.example.h` to `secrets.h`.
 2. Set Wi-Fi and OTA credentials.
 3. Build + flash once over USB.
-4. Use OTA for normal updates.
+4. For OTA updates, press/hold `D1` to bring up Wi-Fi and unlock OTA.
 
 ## CLI build
 ```bash
@@ -52,8 +54,9 @@ PORT="/dev/cu.usbmodem101"
 ```
 
 ## OTA flash
-1. Hold `D1` for ~2.2s to arm OTA.
-2. Run:
+1. Press `D1` once to enable Wi-Fi and connect.
+2. Hold `D1` for ~2.2s to unlock OTA.
+3. Run:
 ```bash
 BIN="/tmp/lipo-out/LiPo_Charger_Helper.ino.bin"
 IP="<board_ip_from_screen>"
